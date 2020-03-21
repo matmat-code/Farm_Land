@@ -33,10 +33,21 @@ var GameState = {
         this.animals = this.game.add.group();
 
         var self = this;
+        var animal;
 
         animalData.forEach(function(element){
-            self.animals.create(200, self.game.world.centerY, element.key);
+           animal = self.animals.create(-1000, self.game.world.centerY, element.key);
+
+           animal.customParams = {text: element.text};
+           animal.anchor.setTo(0.5)
+
+           animal.inputEnabled = true;
+           animal.input.pixelPerfectClick = true;
+           animal.events.onInputDown.add(self.animateAnimal, self);
         });
+
+        this.currentAnimal = this.animals.next();
+        this.currentAnimal.position.set(this.game.world.centerX, this.game.world.centerY)
 
         //left arrow
         this.leftArrow = this.game.add.sprite(60, this.game.world.centerY, 'arrow' )
@@ -63,11 +74,31 @@ var GameState = {
     update: function(){
         
     },
-    switchAnimal: function(sprite, event){
-        console.log('move animal')
-    },
     animateAnimal: function(sprite, event){
         console.log('animate animal')
+    },
+    //switchAnimal
+    switchAnimal: function(sprite,event){
+        var newAnimal, endX;
+
+        if(sprite.customParams.direction > 0){
+            newAnimal = this.animals.next();
+            newAnimal.x = -newAnimal.width/2;
+            endX = 640 + this.currentAnimal.width/2;
+        }
+        else {
+            newAnimal = this.animals.previous();
+            newAnimal.x = 640 + newAnimal.width/2;
+            endX = -this.currentAnimal.width/2;
+        }
+
+        var newAnimalMovement = game.add.tween(newAnimal);
+        newAnimalMovement.to({x: this.game.world.centerX}, 1000);
+        newAnimalMovement.start();
+
+        
+        this.currentAnimal = newAnimal;
+
     }
 };
 
@@ -76,4 +107,3 @@ var game = new Phaser.Game(640,360, Phaser.AUTO);
 game.state.add('GameState', GameState);
 game.state.start('GameState');
 
-//4:52
